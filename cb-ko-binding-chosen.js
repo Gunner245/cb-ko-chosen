@@ -7,6 +7,7 @@ data-bind = "table: {
     selectedValue: *** //the value that user is selected, it can be array
     selectedValueItemProp: the prop of the items in selectedValue array, that will be used to match the value in source
     displayProp: the property of the items in source that will be used as the text of the option, it also can be a valid expression, the "this" is current item, and we can also use $parent, $parents, $data and $root
+    groupProp: the property of the items in source that will be used to generate optgroups. It currently doesn't support expressions, and if this is not entered then no optgroups will be created.
 }"
 */
 (function ($) {
@@ -73,7 +74,7 @@ data-bind = "table: {
                 if (typeof (selectedOptionValueArray[i]) === "undefined" || selectedOptionValueArray[i] == null) {
                     continue;
                 }
-                var optionValue = $(element).children("[value=" + selectedOptionValueArray[i] + "]").data("item");
+                var optionValue = $(element).find("[value=" + selectedOptionValueArray[i] + "]").data("item");
 
                 if (typeof (_.UO(databoundValue.valueProp)) !== "undefined") {
                     optionValue = _.UO(optionValue[_.UO(databoundValue.valueProp)]);
@@ -128,6 +129,7 @@ data-bind = "table: {
             var valueProp = _.UO(value.valueProp);
             var selectedValue = _.UO(value.selectedValue);
             var displayProp = _.UO(value.displayProp);
+            var groupProp = _.UO(value.groupProp);
             var selectedValueItemProp = _.UO(value.selectedValueItemProp);
 
             var selectedValueArray = [];
@@ -150,7 +152,8 @@ data-bind = "table: {
                 return false;
             }
 
-
+			var currentGroupName = null;
+			var currentGroup = null;
             for (var i = 0; i < source.length; i++) {
                 var sourceItemValue = _.UO(source[i]);
                 if (valueProp) {
@@ -182,7 +185,8 @@ data-bind = "table: {
                 } else { //if displayProp is empty, it means directly show the current item
 
                 }
-                var opt;
+				
+                var opt;					
 
                 if (inArray(selectedValueArray, selectedValueItemProp, sourceItemValue)) {
                     opt = $('<option selected="selected" value="' + i + '">' + displayValue + '</option>');
@@ -190,7 +194,27 @@ data-bind = "table: {
                     opt = $('<option value="' + i + '">' + displayValue + '</option>');
                 }
                 opt.data("item", _.UO(source[i]));
-                element.append(opt);
+				
+				if(groupProp == null){
+					element.append(opt);
+					continue;
+				}
+
+				//grouping has been enabled			
+				var groupName = _.UO(source[i][groupProp]);
+				
+				if(!groupName){
+					element.append(opt);
+					continue;
+				}
+				
+				if(groupName != currentGroupName){
+					currentGroupName = groupName;
+					currentGroup = $('<optgroup label="' + groupName + '"></optgroup>');
+					element.append(currentGroup);
+				}				
+				currentGroup.append(opt);	
+                
             }
         }
     };
