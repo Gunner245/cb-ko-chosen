@@ -9,7 +9,7 @@ data-bind = "table: {
     displayProp: the property of the items in source that will be used as the text of the option, it also can be a valid expression, the "this" is current item, and we can also use $parent, $parents, $data and $root
 }"
 */
-(function () {
+(function ($) {
     var _ = {
         UO: ko.utils.unwrapObservable
     };
@@ -226,4 +226,4 @@ data-bind = "table: {
             });
         }
     });
-})();
+})(jQuery);
